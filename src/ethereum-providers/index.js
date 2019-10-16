@@ -4,6 +4,7 @@ import frame from './icons/Frame.png'
 import cipher from './icons/Cipher.png'
 import metamask from './icons/Metamask.png'
 import status from './icons/Status.png'
+import torus from './icons/Torus.png'
 
 // See the corresponding prop type, EthereumProviderType, in prop-types.js.
 const PROVIDERS = new Map(
@@ -48,6 +49,16 @@ const PROVIDERS = new Map(
         'your Ethereum provider': 'Cipher',
       },
     },
+    {
+      id: 'torus',
+      name: 'Torus',
+      type: 'Desktop',
+      image: torus,
+      connect: async () => true,
+      strings: {
+        'your Ethereum provider': 'Torus',
+      },
+    },
   ].map(provider => [provider.id, provider])
 )
 
@@ -67,6 +78,9 @@ function getProviderString(string, providerId = 'unknown') {
 function identifyProvider(provider) {
   if (provider && isElectron()) {
     return 'frame'
+  }
+  if (provider && provider.isTorus) {
+    return 'torus'
   }
   if (provider && provider.isMetaMask) {
     return 'metamask'

@@ -27,6 +27,7 @@
     "@aragon/templates-tokens": "^1.2.1",
     "@aragon/ui": "^1.0.0-alpha.30",
     "@aragon/wrapper": "^5.0.0-rc.17",
+    "@toruslabs/torus-embed": "^0.2.3",
     "@babel/polyfill": "^7.0.0",
     "@sentry/browser": "^5.5.0",
     "@ungap/event-target": "^0.1.0",
