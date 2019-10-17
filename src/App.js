@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useContext }  from 'react'
 import PropTypes from 'prop-types'
 import { createHashHistory as createHistory } from 'history'
 import { Spring, animated } from 'react-spring'
@@ -27,6 +27,8 @@ import { HelpScoutProvider } from './components/HelpScoutBeacon/useHelpScout'
 import GlobalPreferences from './components/GlobalPreferences/GlobalPreferences'
 import CustomToast from './components/CustomToast/CustomToast'
 import { AccountProvider } from './account'
+import Torus from "@toruslabs/torus-embed"
+import TorusContext from './contexts/TorusContext'
 
 import { isKnownRepo } from './repo-utils'
 import {
@@ -73,7 +75,7 @@ class App extends React.Component {
 
   state = {
     ...INITIAL_DAO_STATE,
-    account: '',
+    // account: '',
     balance: getUnknownBalance(),
     connected: false,
     fatalError: null,
@@ -84,10 +86,10 @@ class App extends React.Component {
     selectorNetworks: SELECTOR_NETWORKS,
     transactionBag: null,
     signatureBag: null,
-    walletNetwork: '',
-    walletProviderId: identifyProvider(web3Providers.wallet),
-    walletWeb3: getWeb3(web3Providers.wallet),
-    web3: getWeb3(web3Providers.default),
+    // walletNetwork: '',
+    // walletProviderId: identifyProvider(web3Providers.wallet),
+    // walletWeb3: getWeb3(web3Providers.wallet),
+    // web3: getWeb3(web3Providers.default),
     wrapper: null,
   }
 
@@ -98,29 +100,29 @@ class App extends React.Component {
     this.handleHistoryChange({ pathname, search })
     this.history.listen(this.handleHistoryChange)
 
-    pollMainAccount(web3Providers.wallet, {
-      onAccount: (account = null) => {
-        this.setState({ account })
-        if (account && this.state.wrapper) {
-          this.state.wrapper.setAccounts([account])
-        }
+    // pollMainAccount(web3Providers.wallet, {
+    //   onAccount: (account = null) => {
+    //     this.setState({ account })
+    //     if (account && this.state.wrapper) {
+    //       this.state.wrapper.setAccounts([account])
+    //     }
+    //
+    //     if (account) {
+    //       getIsContractAccount(getWeb3(web3Providers.wallet))
+    //         .then(isContractAccount => this.setState({ isContractAccount }))
+    //         .catch(err => {
+    //           log("Error fetching account's code", err)
+    //         })
+    //     }
+    //   },
+    //   onBalance: balance => {
+    //     this.setState({ balance })
+    //   },
+    // })
 
-        if (account) {
-          getIsContractAccount(getWeb3(web3Providers.wallet))
-            .then(isContractAccount => this.setState({ isContractAccount }))
-            .catch(err => {
-              log("Error fetching account's code", err)
-            })
-        }
-      },
-      onBalance: balance => {
-        this.setState({ balance })
-      },
-    })
-
-    pollNetwork(web3Providers.wallet, walletNetwork => {
-      this.setState({ walletNetwork })
-    })
+    // pollNetwork(web3Providers.wallet, walletNetwork => {
+    //   this.setState({ walletNetwork })
+    // })
 
     // Only the default, because the app can work without the wallet
     pollConnectivity([web3Providers.default], connected => {
@@ -192,8 +194,8 @@ class App extends React.Component {
 
     log('Init DAO', dao)
     initWrapper(dao, {
-      provider: web3Providers.default,
-      walletProvider: web3Providers.wallet,
+      provider: this.props.provider,//web3Providers.default,
+      walletProvider: this.props.provider,//web3Providers.wallet,
       onDaoAddress: ({ address, domain }) => {
         log('dao address', address)
         log('dao domain', domain)
@@ -323,9 +325,17 @@ class App extends React.Component {
   }
 
   render() {
-    const { theme } = this.props
     const {
       account,
+      theme,
+      walletNetwork,
+      walletProviderId,
+      walletWeb3,
+      web3
+    } = this.props
+
+    const {
+      // account,
       apps,
       appIdentifiers,
       appsStatus,
@@ -344,10 +354,10 @@ class App extends React.Component {
       selectorNetworks,
       transactionBag,
       signatureBag,
-      walletNetwork,
-      walletProviderId,
-      walletWeb3,
-      web3,
+      // walletNetwork,
+      // walletProviderId,
+      // walletWeb3,
+      // web3,
       wrapper,
     } = this.state
 
@@ -495,5 +505,31 @@ class App extends React.Component {
 
 export default function(props) {
   const theme = useTheme()
-  return <App theme={theme} {...props} />
+  const [torus, setTorus] = useState({})
+  const [username, setUsername] = useState()
+  const [account, setAccount] = useState()
+  useEffect(()=>{
+    const _torus = new Torus()
+    _torus.init({network:{host:'localhost'}})
+      .then(()=>setTorus(_torus))
+      .then(()=>_torus.login({verifier: "reddit"}))
+      .then(([account])=>setAccount(account))
+      .then(()=>_torus.getUserInfo())
+      .then(({verifierId})=>setUsername(verifierId))
+  },[])
+
+  return (
+    <TorusContext.Provider value={{ torus, username, account }}>
+      {torus.provider && <App
+        theme={theme}
+        {...props}
+        provider={torus.provider}
+        account={account}
+        walletNetwork={"private"}
+        walletProviderId={identifyProvider(torus.provider)}
+        walletWeb3={getWeb3(torus.provider)}
+        web3={getWeb3(torus.provider)}
+      />}
+    </TorusContext.Provider>
+  )
 }
