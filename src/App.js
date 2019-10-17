@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext }  from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { createHashHistory as createHistory } from 'history'
 import { Spring, animated } from 'react-spring'
@@ -27,7 +27,7 @@ import { HelpScoutProvider } from './components/HelpScoutBeacon/useHelpScout'
 import GlobalPreferences from './components/GlobalPreferences/GlobalPreferences'
 import CustomToast from './components/CustomToast/CustomToast'
 import { AccountProvider } from './account'
-import Torus from "@toruslabs/torus-embed"
+import Torus from '@toruslabs/torus-embed'
 import TorusContext from './contexts/TorusContext'
 
 import { isKnownRepo } from './repo-utils'
@@ -194,8 +194,8 @@ class App extends React.Component {
 
     log('Init DAO', dao)
     initWrapper(dao, {
-      provider: this.props.provider,//web3Providers.default,
-      walletProvider: this.props.provider,//web3Providers.wallet,
+      provider: this.props.provider, // web3Providers.default,
+      walletProvider: this.props.provider, // web3Providers.wallet,
       onDaoAddress: ({ address, domain }) => {
         log('dao address', address)
         log('dao domain', domain)
@@ -331,7 +331,7 @@ class App extends React.Component {
       walletNetwork,
       walletProviderId,
       walletWeb3,
-      web3
+      web3,
     } = this.props
 
     const {
@@ -508,28 +508,31 @@ export default function(props) {
   const [torus, setTorus] = useState({})
   const [username, setUsername] = useState()
   const [account, setAccount] = useState()
-  useEffect(()=>{
+  useEffect(() => {
     const _torus = new Torus()
-    _torus.init({network:{host:'localhost'}})
-      .then(()=>setTorus(_torus))
-      .then(()=>_torus.login({verifier: "reddit"}))
-      .then(([account])=>setAccount(account))
-      .then(()=>_torus.getUserInfo())
-      .then(({verifierId})=>setUsername(verifierId))
-  },[])
+    _torus
+      .init({ network: { host: 'localhost' } })
+      .then(() => setTorus(_torus))
+      .then(() => _torus.login({ verifier: 'reddit' }))
+      .then(([account]) => setAccount(account))
+      .then(() => _torus.getUserInfo())
+      .then(({ verifierId }) => setUsername(verifierId))
+  }, [])
 
   return (
     <TorusContext.Provider value={{ torus, username, account }}>
-      {torus.provider && <App
-        theme={theme}
-        {...props}
-        provider={torus.provider}
-        account={account}
-        walletNetwork={"private"}
-        walletProviderId={identifyProvider(torus.provider)}
-        walletWeb3={getWeb3(torus.provider)}
-        web3={getWeb3(torus.provider)}
-      />}
+      {torus.provider && (
+        <App
+          theme={theme}
+          {...props}
+          provider={torus.provider}
+          account={account}
+          walletNetwork={'private'}
+          walletProviderId={identifyProvider(torus.provider)}
+          walletWeb3={getWeb3(torus.provider)}
+          web3={getWeb3(torus.provider)}
+        />
+      )}
     </TorusContext.Provider>
   )
 }
